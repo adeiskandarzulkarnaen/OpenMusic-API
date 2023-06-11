@@ -1,0 +1,21 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es2021": true,
+        "node": true
+    },
+    "extends": "google",
+    "overrides": [
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest"
+    },
+    "rules": {
+        "require-jsdoc": "off",
+        "linebreak-style": "off",
+        "max-len": [1, 85, 2],
+        "object-curly-spacing": [2, "always"],
+        "no-trailing-spaces" : ["error", { "skipBlankLines": true }]
+    }
+}
