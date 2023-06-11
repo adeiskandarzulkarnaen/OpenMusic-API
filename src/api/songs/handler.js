@@ -35,15 +35,18 @@ class SongsHandler {
     };
   }
   
-  async getSongByIdHandler({ params }) {
-    const song = await this._service.getSongById(params.id);
+  async getSongByIdHandler({ params }, h) {
+    const { song, source } = await this._service.getSongById(params.id);
     
-    return {
+    const response = h.response({
       status: 'success',
       data: {
         song,
       },
-    };
+    });
+    response.header('X-Data-Source', source);
+    response.code(200);
+    return response;
   }
   
   async putSongByIdHandler({ params, payload }) {

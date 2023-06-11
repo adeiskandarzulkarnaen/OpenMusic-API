@@ -51,8 +51,6 @@ class PlaylistsHandler {
     };
   }
   
-  /** song to playlist */
-  
   async postSongIntoPlaylistHandler({ params, payload, auth }, h) {
     this._validator.validatePostSongIntoPlaylistPayload(payload);
     
@@ -63,7 +61,6 @@ class PlaylistsHandler {
     await this._service.verifyPlaylistAccess(playlistId, userId);
     await this._service.addSongToPlaylist(playlistId, songId);
     
-    // add data to playlist activity
     await this._service.addPlaylistActivity({
       playlistId, songId, userId, action: 'add',
     });
@@ -101,7 +98,6 @@ class PlaylistsHandler {
     await this._service.verifyPlaylistAccess(playlistId, userId);
     await this._service.deleteSongFromPlaylist(playlistId, songId);
     
-    // add data to playlist activity
     await this._service.addPlaylistActivity({
       playlistId, songId, userId, action: 'delete',
     });

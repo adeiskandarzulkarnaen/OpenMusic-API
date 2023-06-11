@@ -1,4 +1,3 @@
-
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
@@ -107,9 +106,7 @@ class PlaylistsService {
     
     const { rowCount } = await this._pool.query(query);
     
-    if (!rowCount) {
-      throw new NotFoundError('lagu tidak ditemukan');
-    }
+    if (!rowCount) throw new NotFoundError('lagu tidak ditemukan');
   }
   
   /* activity */
@@ -126,7 +123,7 @@ class PlaylistsService {
     
     await this._pool.query(query);
   }
-   
+  
   async getPlaylistActivities(playlistId) {
     const query = {
       text: `SELECT users.username, songs.title, action, time 
@@ -138,9 +135,7 @@ class PlaylistsService {
     };
     
     const { rows, rowCount } = await this._pool.query(query);
-    if (!rowCount) {
-      throw new NotFoundError('Playlist Activity tidak ditemukan');
-    }
+    if (!rowCount) throw new NotFoundError('Playlist Activity tidak ditemukan');
     
     return rows;
   };
@@ -165,9 +160,7 @@ class PlaylistsService {
     
     const { rowCount } = await this._pool.query(query);
     
-    if (rowCount) {
-      throw new InvariantError('lagu sudah ada di playlist.');
-    }
+    if (rowCount) throw new InvariantError('lagu sudah ada di playlist.');
   }
   
   async verifyPlaylistOwner(playlistId, owner) {
@@ -177,9 +170,8 @@ class PlaylistsService {
     };
     
     const { rows, rowCount } = await this._pool.query(query);
-    if (!rowCount) {
-      throw new NotFoundError('playlist tidak ditemukan');
-    }
+    if (!rowCount) throw new NotFoundError('playlist tidak ditemukan');
+     
     
     const playlist = rows[0];
     if (playlist.owner !== owner) {

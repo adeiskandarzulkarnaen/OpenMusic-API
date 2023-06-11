@@ -2,6 +2,7 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
+const { mapDBToModel } = require('../../utils');
 
 class AlbumsService {
   constructor() {
@@ -17,9 +18,7 @@ class AlbumsService {
     };
     
     const { rows } = await this._pool.query(query);
-    if (!rows[0].id) {
-      throw new InvariantError('album gagal ditambahkan');
-    }
+    if (!rows[0].id) throw new InvariantError('album gagal ditambahkan');
     
     return rows[0].id;
   }
@@ -30,6 +29,7 @@ class AlbumsService {
         albums.id,
         albums.name,
         albums.year,
+        albums.cover_url,
         COALESCE(
           JSON_AGG(
             JSON_BUILD_OBJECT(
@@ -48,9 +48,11 @@ class AlbumsService {
     
     const { rows, rowCount } = await this._pool.query(query);
     if (!rowCount) {
-      throw new NotFoundError('gagal mendapatkan album,id tidak ditemukan.');
+      throw new NotFoundError('gagal mendapatkan album, id tidak ditemukan.');
     }
-    return rows[0];
+    
+    const mappedResult = rows.map(mapDBToModel);
+    return mappedResult[0];
   }
   
   async editAlbumById(id, { name, year }) {
@@ -73,8 +75,39 @@ class AlbumsService {
     
     const { rowCount } = await this._pool.query(query);
     if (!rowCount) {
-      throw new NotFoundError('album gagal dihapus, Id tidak ditemukan.');
+      throw new NotFoundError('album gagal dihapus. Id tidak ditemukan');
     }
+  }
+  
+  async addAlbumCover(id, url) {
+    const query = {
+      text: 'UPDATE albums SET cover_url=$1 WHERE id = $2',
+      values: [url, id],
+    };
+    
+    await this._pool.query(query);
+  }
+  
+  async getAlbumCoverById(id) {
+    const query = {
+      text: 'SELECT cover_url FROM albums WHERE id = $1',
+      values: [id],
+    };
+    
+    const { rows, rowCount } = await this._pool.query(query);
+    if (!rowCount) throw new NotFoundError('album tidak ditemukan');
+    
+    return rows[0].cover_url;
+  }
+  
+  async verifyAlbumAvailability(id) {
+    const query = {
+      text: 'SELECT id FROM albums where id = $1',
+      values: [id],
+    };
+    
+    const { rowCount } = await this._pool.query(query);
+    if (!rowCount) throw new NotFoundError('album tidak ditemukan');
   }
 }
 

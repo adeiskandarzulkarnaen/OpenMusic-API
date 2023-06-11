@@ -22,9 +22,7 @@ class AuthenticationsService {
     };
     
     const { rowCount } = await this._pool.query(query);
-    if (!rowCount) {
-      throw new InvariantError('Refresh token tidak valid');
-    }
+    if (!rowCount) throw new InvariantError('Refresh token tidak valid');
   }
   
   async deleteRefreshToken(token) {

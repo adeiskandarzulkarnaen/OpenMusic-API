@@ -28,9 +28,7 @@ class CollaborationsService {
     
     const { rowCount } = await this._pool.query(query);
     
-    if (!rowCount) {
-      throw new InvariantError('Gagal menghapus user collaborator');
-    }
+    if (!rowCount) throw new InvariantError('Gagal menghapus user collaborator');
   }
   
   async verifyCollaborator(playlistId, userId) {
@@ -42,9 +40,7 @@ class CollaborationsService {
     
     const { rowCount } = await this._pool.query(query);
     
-    if (!rowCount) {
-      throw new InvariantError('kolaborasi gagal diverifikasi');
-    }
+    if (!rowCount) throw new InvariantError('kolaborasi gagal diverifikasi');
   }
 }
 

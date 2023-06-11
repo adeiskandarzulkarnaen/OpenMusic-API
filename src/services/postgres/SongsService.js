@@ -4,8 +4,9 @@ const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class SongsService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
   
   async addSong(payload) {
@@ -18,9 +19,7 @@ class SongsService {
     };
     
     const { rows, rowCount } = await this._pool.query(query);
-    if (!rowCount) {
-      throw new InvariantError('Lagu gagal ditambahkan');
-    }
+    if (!rowCount) throw new InvariantError('Lagu gagal ditambahkan');
     
     return rows[0].id;
   }
@@ -38,17 +37,24 @@ class SongsService {
   }
   
   async getSongById(id) {
-    const query = {
-      text: 'SELECT * FROM songs WHERE id=$1',
-      values: [id],
-    };
-    
-    const { rows, rowCount } = await this._pool.query(query);
-    if (!rowCount) {
-      throw new NotFoundError('Lagu tidak ditemukan');
+    try {
+      const result = await this._cacheService.get(`song:${id}`);
+      const song = JSON.parse(result);
+      return { song, source: 'cache' };
+    } catch (error) {
+      const query = {
+        text: 'SELECT * FROM songs WHERE id=$1',
+        values: [id],
+      };
+      
+      const { rows, rowCount } = await this._pool.query(query);
+      if (!rowCount) {
+        throw new NotFoundError('Lagu tidak ditemukan');
+      }
+      
+      await this._cacheService.set(`song:${id}`, JSON.stringify(rows[0]));
+      return { song: rows[0], source: 'dbserver' };
     }
-    
-    return rows[0];
   }
   
   async editSongById(id, payload) {
@@ -65,6 +71,8 @@ class SongsService {
     if (!rowCount) {
       throw new NotFoundError('Gagal memperbarui lagu, id tidak ditemukan.');
     }
+    
+    await this._cacheService.delete(`song:${id}`);
   }
   
   async deleteSongById(id) {
@@ -78,6 +86,8 @@ class SongsService {
     if (!rowCount) {
       throw new NotFoundError('Lagu gagal dihapus, id tidak ditemukan.');
     }
+    
+    await this._cacheService.delete(`song:${id}`);
   }
 }
 

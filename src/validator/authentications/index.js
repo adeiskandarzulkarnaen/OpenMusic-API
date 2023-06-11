@@ -22,7 +22,6 @@ const AutenticationsValidator = {
   },
   
   validateDeleteAuthenticationPayload: (payload) => {
-    // eslint-disable-next-line max-len
     const validationResult = DeleteAuthenticationPayloadSchema.validate(payload);
     if (validationResult.error) {
       throw new InvariantError(validationResult.error.message);
